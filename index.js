@@ -16,35 +16,46 @@ app.use(bodyParser.json());
 
 app.get('/fetchFeatured', (req, res) => {
     db.query('SELECT * FROM items ORDER BY timesbought DESC LIMIT 5').then(results => {
+      console.log(results)
       res.json({ items: results })
     });
   })
 
-  app.post('/addNewItem', (req, res) =>{
-    console.log(req.body)
-    db.query('SELECT COUNT(*) AS name FROM items WHERE name = ?', [req.body.name]).then(dbResults => {
-      if(dbResults[0].name >= 1){
-        console.log(dbResults)
-        res.send("Product name taken")
-      }else{
-        console.log(dbResults[0].name)
-        res.sendStatus(200)
-        db.query('INSERT INTO items (name, price, imgURL, timesbought) VALUES (?,?,?,?)',
-                  [req.body.name, req.body.price, req.body.imgURL, req.body.timesbought]);
-      }
+app.post('/fetchItemInfo', (req, res) =>{
+    db.query('SELECT * FROM items WHERE productURL = ?', [req.body.productURL]).then(results => {
+      console.log(results)
+      res.json({ item: results })
+    });
+  })
+
+app.post('/addNewItem', (req, res) =>{
+  console.log(req.body)
+  db.query('SELECT COUNT(*) AS name FROM items WHERE name = ?', [req.body.name]).then(dbResults => {
+    if(dbResults[0].name >= 1){
+      console.log(dbResults)
+      res.send("Product name taken")
+    }else{
+      console.log(dbResults[0].name)
+      res.sendStatus(200)
+      db.query('INSERT INTO items (name, productURL, price, description, tags, imgURL, timesbought) VALUES (?,?,?,?,?,?,?)',
+                [req.body.name, req.body.productURL, req.body.price, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought]);
     }
-  ).catch(err => res.send(err))
   }
-  )
+).catch(err => res.send(err))
+}
+)
 
 /* DB init */
 Promise.all(
     [
         db.query(`CREATE TABLE IF NOT EXISTS items(
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(32),
+            name VARCHAR(100),
+            productURL VARCHAR(100),
+            description VARCHAR(2000),
             imgURL VARCHAR(2000),
             price DOUBLE,
+            tags VARCHAR(240),
             timesbought INT
         )`),
         db.query(`CREATE TABLE IF NOT EXISTS users(
