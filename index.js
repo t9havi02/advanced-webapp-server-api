@@ -16,14 +16,12 @@ app.use(bodyParser.json());
 
 app.get('/fetchFeatured', (req, res) => {
     db.query('SELECT * FROM items ORDER BY timesbought DESC LIMIT 5').then(results => {
-      console.log(results)
       res.json({ items: results })
     });
   })
 
 app.post('/fetchItemInfo', (req, res) =>{
     db.query('SELECT * FROM items WHERE productURL = ?', [req.body.productURL]).then(results => {
-      console.log(results)
       res.json({ item: results })
     });
   })
