@@ -13,6 +13,11 @@ const db = require('./db');
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get('/fetchItems', (req, res) => {
+  db.query('SELECT * FROM items').then(results => {
+    res.json({ items: results })
+  });
+})
 
 app.get('/fetchFeatured', (req, res) => {
     db.query('SELECT * FROM items ORDER BY timesbought DESC LIMIT 5').then(results => {
