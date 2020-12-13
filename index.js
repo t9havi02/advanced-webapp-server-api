@@ -48,6 +48,49 @@ app.post('/addNewItem', (req, res) =>{
 }
 )
 
+app.post('/user/register', (req, res) =>{
+  db.query('SELECT COUNT(*) AS username FROM users WHERE username = ?', [req.body.username]).then(dbResults => {
+    if(dbResults[0].username >= 1){
+      res.send("Username Taken")
+    }else{
+      res.sendStatus(200)
+      const passwordHash = bcrypt.hashSync(req.body.password, 8);
+      db.query('INSERT INTO users (id, username, password) VALUES (?,?,?)',
+                [uuidv4(), req.body.username, passwordHash]);
+    }
+  }
+).catch(err => res.send(err))
+}
+)
+
+passport.use(new passportHTTP.BasicStrategy((username, password, cb) => {
+  db.query('SELECT id, username, password FROM users WHERE username = ?', [username]).then(dbResults => {
+
+    if(dbResults.length == 0)
+    {
+      return cb(null, false);
+    }
+
+    bcrypt.compare(password, dbResults[0].password).then(bcryptResult => {
+      if(bcryptResult == true)
+      {
+        cb(null, dbResults);
+      }
+      else
+      {
+        return cb(null, false);
+      }
+    })
+
+  }).catch(dbError => cb(err))
+}));
+
+app.post('/user/login', passport.authenticate('basic', { session: false }), (req, res) => {
+  console.log(req)
+  res.sendStatus(200);
+})
+
+
 /* DB init */
 Promise.all(
     [
