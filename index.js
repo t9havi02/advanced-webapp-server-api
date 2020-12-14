@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
@@ -11,7 +10,28 @@ const db = require('./db');
 
 
 app.use(cors());
-app.use(bodyParser.json());
+
+passport.serializeUser(function(user, done) {
+  console.log(user);
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    console.log("hello")
+    done(err, user);
+  });
+});
+
+var session = require("express-session"),
+    bodyParser = require("body-parser");
+
+app.use(express.static("public"));
+app.use(session({ secret: "dogs" }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.get('/fetchItems', (req, res) => {
   db.query('SELECT * FROM items').then(results => {
@@ -74,7 +94,7 @@ passport.use(new passportHTTP.BasicStrategy((username, password, cb) => {
     bcrypt.compare(password, dbResults[0].password).then(bcryptResult => {
       if(bcryptResult == true)
       {
-        cb(null, dbResults);
+        cb(null, dbResults[0]);
       }
       else
       {
@@ -85,11 +105,10 @@ passport.use(new passportHTTP.BasicStrategy((username, password, cb) => {
   }).catch(dbError => cb(err))
 }));
 
-app.post('/user/login', passport.authenticate('basic', { session: false }), (req, res) => {
-  console.log(req)
+app.post('/user/login', passport.authenticate('basic', { session:"dogs"}), (req, res) => {
+  console.log("made it here?")
   res.sendStatus(200);
 })
-
 
 /* DB init */
 Promise.all(
