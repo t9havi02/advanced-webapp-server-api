@@ -19,6 +19,12 @@ app.get('/fetchItems', (req, res) => {
   });
 })
 
+app.post('/fetchFilteredItems', (req, res) =>{
+  db.query('SELECT * FROM items WHERE productURL LIKE' [req.body.productURL]).then(results => {
+    res.json({ item: results })
+  });
+})
+
 app.get('/fetchFeatured', (req, res) => {
     db.query('SELECT * FROM items ORDER BY timesbought DESC LIMIT 5').then(results => {
       res.json({ items: results })
