@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
@@ -11,7 +10,28 @@ const db = require('./db');
 
 
 app.use(cors());
-app.use(bodyParser.json());
+
+passport.serializeUser(function(user, done) {
+  console.log(user);
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    console.log("hello")
+    done(err, user);
+  });
+});
+
+var session = require("express-session"),
+    bodyParser = require("body-parser");
+
+app.use(express.static("public"));
+app.use(session({ secret: "dogs" }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.get('/fetchItems', (req, res) => {
   db.query('SELECT * FROM items').then(results => {
@@ -53,6 +73,48 @@ app.post('/addNewItem', (req, res) =>{
 ).catch(err => res.send(err))
 }
 )
+
+app.post('/user/register', (req, res) =>{
+  db.query('SELECT COUNT(*) AS username FROM users WHERE username = ?', [req.body.username]).then(dbResults => {
+    if(dbResults[0].username >= 1){
+      res.send("Username Taken")
+    }else{
+      res.sendStatus(200)
+      const passwordHash = bcrypt.hashSync(req.body.password, 8);
+      db.query('INSERT INTO users (id, username, password) VALUES (?,?,?)',
+                [uuidv4(), req.body.username, passwordHash]);
+    }
+  }
+).catch(err => res.send(err))
+}
+)
+
+passport.use(new passportHTTP.BasicStrategy((username, password, cb) => {
+  db.query('SELECT id, username, password FROM users WHERE username = ?', [username]).then(dbResults => {
+
+    if(dbResults.length == 0)
+    {
+      return cb(null, false);
+    }
+
+    bcrypt.compare(password, dbResults[0].password).then(bcryptResult => {
+      if(bcryptResult == true)
+      {
+        cb(null, dbResults[0]);
+      }
+      else
+      {
+        return cb(null, false);
+      }
+    })
+
+  }).catch(dbError => cb(err))
+}));
+
+app.post('/user/login', passport.authenticate('basic', { session:"dogs"}), (req, res) => {
+  console.log("made it here?")
+  res.sendStatus(200);
+})
 
 /* DB init */
 Promise.all(
