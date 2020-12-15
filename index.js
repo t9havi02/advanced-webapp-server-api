@@ -7,30 +7,11 @@ const passportHTTP = require('passport-http');
 const app = express();
 const port = 4000;
 const db = require('./db');
+const bodyParser = require('body-parser');
 
 
 app.use(cors());
-
-passport.serializeUser(function(user, done) {
-  console.log(user);
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    console.log("hello")
-    done(err, user);
-  });
-});
-
-var session = require("express-session"),
-    bodyParser = require("body-parser");
-
-app.use(express.static("public"));
-app.use(session({ secret: "dogs" }));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(bodyParser.json());
 
 
 app.get('/fetchItems', (req, res) => {
@@ -111,8 +92,8 @@ passport.use(new passportHTTP.BasicStrategy((username, password, cb) => {
   }).catch(dbError => cb(err))
 }));
 
-app.post('/user/login', passport.authenticate('basic', { session:"dogs"}), (req, res) => {
-  console.log("made it here?")
+app.post('/user/login', passport.authenticate('basic', { session: false}), (req, res) => {
+  console.log('Admin login successful')
   res.sendStatus(200);
 })
 
