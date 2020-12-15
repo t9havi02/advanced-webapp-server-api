@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 
 app.get('/fetchItems', (req, res) => {
   db.query('SELECT * FROM items').then(results => {
+    console.log(results)
     res.json({ items: results })
   });
 })
@@ -27,12 +28,13 @@ app.post('/fetchFilteredItems', (req, res) =>{
 })
 
 app.get('/fetchFeatured', (req, res) => {
-    db.query('SELECT * FROM items ORDER BY timesbought DESC LIMIT 5').then(results => {
+    db.query('SELECT * FROM items ORDER BY timesviewed DESC LIMIT 5').then(results => {
       res.json({ items: results })
     });
   })
 
 app.post('/fetchItemInfo', (req, res) =>{
+    db.query('UPDATE items SET timesviewed = timesviewed + 1 WHERE animalURL = ?', [req.body.animalURL]);
     db.query('SELECT * FROM items WHERE animalURL = ?', [req.body.animalURL]).then(results => {
       res.json({ item: results })
     });
@@ -40,7 +42,6 @@ app.post('/fetchItemInfo', (req, res) =>{
 
 app.post('/fetchItemModify', (req, res) =>{
   db.query('SELECT * FROM items WHERE name = ?', [req.body.name]).then(results => {
-    console.log(results)
     res.json({ item: results })
   });
 })
@@ -54,8 +55,8 @@ app.post('/addNewItem', (req, res) =>{
     }else{
       console.log(dbResults[0].name)
       res.sendStatus(200)
-      db.query('INSERT INTO items (name, animalURL, danger, description, tags, imgURL, timesbought) VALUES (?,?,?,?,?,?,?)',
-                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought]);
+      db.query('INSERT INTO items (name, animalURL, danger, description, tags, imgURL, timesviewed) VALUES (?,?,?,?,?,?,?)',
+                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesviewed]);
     }
   }
 ).catch(err => res.send(err))
@@ -71,8 +72,8 @@ app.post('/modifyItem', (req, res) =>{
     }else{
       console.log(dbResults[0].name)
       res.sendStatus(200)
-      db.query('UPDATE items SET name = ?, animalURL = ?, danger = ?, description = ?, tags = ?, imgURL = ?, timesbought = ? WHERE id = ?',
-                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought, req.body.id]);
+      db.query('UPDATE items SET name = ?, animalURL = ?, danger = ?, description = ?, tags = ?, imgURL = ?, timesviewed = ? WHERE id = ?',
+                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesviewed, req.body.id]);
     }
   }
 ).catch(err => res.send(err))
@@ -132,7 +133,7 @@ Promise.all(
             imgURL VARCHAR(2000),
             danger DOUBLE,
             tags VARCHAR(240),
-            timesbought INT
+            timesviewed INT
         )`),
         db.query(`CREATE TABLE IF NOT EXISTS users(
             id VARCHAR(255) PRIMARY KEY,
