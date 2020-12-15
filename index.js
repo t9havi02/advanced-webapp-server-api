@@ -21,7 +21,7 @@ app.get('/fetchItems', (req, res) => {
 })
 
 app.post('/fetchFilteredItems', (req, res) =>{
-  db.query('SELECT * FROM items WHERE productURL LIKE' [req.body.productURL]).then(results => {
+  db.query('SELECT * FROM items WHERE animalURL LIKE' [req.body.animalURL]).then(results => {
     res.json({ item: results })
   });
 })
@@ -33,22 +33,46 @@ app.get('/fetchFeatured', (req, res) => {
   })
 
 app.post('/fetchItemInfo', (req, res) =>{
-    db.query('SELECT * FROM items WHERE productURL = ?', [req.body.productURL]).then(results => {
+    db.query('SELECT * FROM items WHERE animalURL = ?', [req.body.animalURL]).then(results => {
       res.json({ item: results })
     });
   })
+
+app.post('/fetchItemModify', (req, res) =>{
+  db.query('SELECT * FROM items WHERE name = ?', [req.body.name]).then(results => {
+    console.log(results)
+    res.json({ item: results })
+  });
+})
 
 app.post('/addNewItem', (req, res) =>{
   console.log(req.body)
   db.query('SELECT COUNT(*) AS name FROM items WHERE name = ?', [req.body.name]).then(dbResults => {
     if(dbResults[0].name >= 1){
       console.log(dbResults)
-      res.send("Product name taken")
+      res.send("Animal name taken")
     }else{
       console.log(dbResults[0].name)
       res.sendStatus(200)
-      db.query('INSERT INTO items (name, productURL, price, description, tags, imgURL, timesbought) VALUES (?,?,?,?,?,?,?)',
-                [req.body.name, req.body.productURL, req.body.price, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought]);
+      db.query('INSERT INTO items (name, animalURL, danger, description, tags, imgURL, timesbought) VALUES (?,?,?,?,?,?,?)',
+                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought]);
+    }
+  }
+).catch(err => res.send(err))
+}
+)
+
+app.post('/modifyItem', (req, res) =>{
+  console.log(req.body)
+  db.query('SELECT COUNT(*) AS name FROM items WHERE name = ?', [req.body.name]).then(dbResults => {
+    if(dbResults[0].name = 0){
+      console.log(dbResults)
+      res.send("Animal name doesn't exist")
+    }else{
+      console.log(dbResults[0].name)
+      res.sendStatus(200)
+      db.query('UPDATE items SET name = ?, animalURL = ?, danger = ?, description = ?, tags = ?, imgURL = ?, timesbought = ? WHERE id = ?',
+                [req.body.name, req.body.animalURL, req.body.danger, req.body.description, req.body.tags, req.body.imgURL, req.body.timesbought, req.body.id]);
     }
   }
 ).catch(err => res.send(err))
@@ -103,10 +127,10 @@ Promise.all(
         db.query(`CREATE TABLE IF NOT EXISTS items(
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100),
-            productURL VARCHAR(100),
+            animalURL VARCHAR(100),
             description VARCHAR(2000),
             imgURL VARCHAR(2000),
-            price DOUBLE,
+            danger DOUBLE,
             tags VARCHAR(240),
             timesbought INT
         )`),
