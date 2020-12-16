@@ -9,7 +9,6 @@ pool  = new Pool({
   database        : 'd1gqm6i9bpiv43'
 });
 
-
 const api = {
   query: (query, ...parameters) =>
   {
