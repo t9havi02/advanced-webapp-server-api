@@ -9,7 +9,6 @@ const port = 5432;
 const db = require('./db');
 const bodyParser = require('body-parser');
 
-
 app.use(cors());
 app.use(bodyParser.json());
 
