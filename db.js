@@ -1,6 +1,5 @@
 const Pool = require('pg').Pool
 
-
 pool  = new Pool({
   connectionLimit : 10,
   host            : 'ec2-54-162-207-150.compute-1.amazonaws.com',
