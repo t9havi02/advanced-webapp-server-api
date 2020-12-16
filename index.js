@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const passportHTTP = require('passport-http');
 const app = express();
-const port = 5432;
+const port = 4000;
 const db = require('./db');
 const bodyParser = require('body-parser');
 
