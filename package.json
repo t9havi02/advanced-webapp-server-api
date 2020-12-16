@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/FennekHeart/advanced-webapp-server-api/issues"
   },
-  "homepage": "https://github.com/FennekHeart/advanced-webapp-server-api#readme",
+  "homepage": "https://krhumaja-api.herokuapp.com/",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
