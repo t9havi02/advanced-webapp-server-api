@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 
 app.get('/fetchItems', (req, res) => {
-  db.query('SELECT * FROM items').then(results => {
+  db.query('SELECT * FROM items ORDER BY name').then(results => {
     console.log(results)
     res.json({ items: results })
   });
